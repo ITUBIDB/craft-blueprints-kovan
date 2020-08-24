@@ -15,15 +15,12 @@ class subinfo(info.infoclass):
 
     def setTargets(self):
         self.versionInfo.setDefaultValues(tarballUrl="https://download.owncloud.com/desktop/stable/owncloudclient-${VERSION}.tar.xz",
-                                          tarballInstallSrc="owncloudclient-${VERSION}",
-                                          gitUrl="[git]https://github.com/owncloud/client")
+                                          tarballInstallSrc="kovanclient-${VERSION}",
+                                          gitUrl="[git]https://github.com/ITUBIDB/kovan-desktop-client")
 
-        # we don't have that branche yet
-        self.svnTargets["2.7"] = self.svnTargets["master"]
-
-        self.description = "ownCloud Desktop Client"
-        self.displayName = "ownCloud"
-        self.webpage = "https://owncloud.org"
+        self.description = "Kovan Desktop Client"
+        self.displayName = "Kovan"
+        self.webpage = "https://kovan.itu.edu.tr"
 
     def setDependencies(self):
         self.buildDependencies["craft/craft-blueprints-owncloud"] = None
@@ -41,9 +38,6 @@ class subinfo(info.infoclass):
         if self.options.dynamic.buildVfsWin:
             self.runtimeDependencies["owncloud/client-plugin-vfs-win"] = None
 
-        if self.buildTarget != "master" and self.buildTarget < CraftVersion("2.6"):
-            self.runtimeDependencies["libs/qt5/qtwebkit"] = None
-
         if not CraftCore.compiler.isWindows:
             # the unit tests first need to get ported to Windows
             if self.options.dynamic.buildTests:
@@ -57,8 +51,6 @@ class Package(CMakePackageBase):
     def __init__(self):
         CMakePackageBase.__init__(self)
         self.subinfo.options.fetch.checkoutSubmodules = True
-        # Pending PR to move to standard BUILD_TESTING: https://github.com/owncloud/client/pull/6917#issuecomment-444845521
-        self.subinfo.options.configure.args += " -DUNIT_TESTING={testing} ".format(testing="ON" if self.buildTests else "OFF")
 
         if 'OWNCLOUD_CMAKE_PARAMETERS' in os.environ:
                 self.subinfo.options.configure.args += os.environ['OWNCLOUD_CMAKE_PARAMETERS']
@@ -74,7 +66,7 @@ class Package(CMakePackageBase):
 
     @property
     def applicationExecutable(self):
-        return os.environ.get('ApplicationExecutable', 'owncloud')
+        return os.environ.get('ApplicationExecutable', 'Kovan')
 
     def fetch(self):
         if self.subinfo.options.dynamic.buildVfsWin:
@@ -183,7 +175,7 @@ class Package(CMakePackageBase):
         self.blacklist_file.append(os.path.join(self.packageDir(), 'blacklist.txt'))
         self.defines["appname"] = self.applicationExecutable
         self.defines["apppath"] = "Applications/KDE/" + self.applicationExecutable + ".app"
-        self.defines["company"] = "ownCloud GmbH"
+        self.defines["company"] = "ITU BIDB"
         self.defines["shortcuts"] = [{"name" : self.subinfo.displayName , "target" : f"bin/{self.defines['appname']}{CraftCore.compiler.executableSuffix}", "description" : self.subinfo.description}]
         self.defines["icon"] = Path(self.buildDir()) / "src/gui/owncloud.ico"
         self.defines["pkgproj"] = Path(self.buildDir()) / "admin/osx/macosx.pkgproj"
